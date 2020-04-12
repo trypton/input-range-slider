@@ -47,7 +47,7 @@ const thumbStyle = (browser) => {
   return css`
     .input-slider__input::${prefix} {
       -webkit-appearance: none;
-      background-color: var(--color-fill);
+      background-color: var(--color-thumb);
       border: none;
       border-radius: var(--thumb-size);
       height: var(--thumb-size);
@@ -70,7 +70,9 @@ const thumbStyle = (browser) => {
 
 export const inputSliderStyles = css`
   :host {
-    --color-fill: #3f51b5;
+    --color-primary: #3f51b5;
+    --color-fill: var(--color-primary);
+    --color-thumb: var(--color-primary);
     --color-outline: rgba(159, 168, 218, 0.5);
     --color-track: #eee;
     --track-height: 4px;
