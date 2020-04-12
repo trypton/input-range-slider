@@ -12,8 +12,51 @@ const SLIDER_STATE = {
 export class InputSlider extends LitElement {
   static get properties() {
     return {
-      from: { type: Number },
-      to: { type: Number },
+      value: {
+        type: Array,
+        reflect: true,
+        converter: {
+          fromAttribute: (value) => {
+            try {
+              const arr = JSON.parse(value);
+
+              if (Array.isArray(arr)) {
+                const from = typeof arr[0] !== 'undefined' ? Number(arr[0]) : Number.NaN;
+                if (Number.isNaN(from) || !Number.isFinite(from)) {
+                  return [];
+                }
+
+                const to = typeof arr[1] !== 'undefined' ? Number(arr[1]) : Number.NaN;
+                if (Number.isNaN(to) || !Number.isFinite(to)) {
+                  return [from];
+                }
+
+                return [from, to];
+              }
+            } catch {
+              return [];
+            }
+
+            const number = value.length ? Number(value) : Number.NaN;
+            if (!Number.isNaN(number) && Number.isFinite(number)) {
+              return [number];
+            }
+
+            return [];
+          },
+          toAttribute: (value) => {
+            if (!Array.isArray(value) || typeof value[0] === 'undefined') {
+              return '';
+            }
+
+            if (typeof value[1] === 'undefined') {
+              return value[0].toString();
+            }
+
+            return JSON.stringify(value);
+          },
+        },
+      },
       min: { type: Number },
       max: { type: Number },
     };
@@ -30,35 +73,54 @@ export class InputSlider extends LitElement {
   constructor() {
     super();
 
-    // Properties
+    // Initialize properties
     this.min = 0;
     this.max = 100;
-    this.from = 0;
-    this.to = 100;
+    this.value = [];
 
     this.sliderState = SLIDER_STATE.NOT_SLIDING;
   }
 
+  get from() {
+    return typeof this.value[0] === 'undefined' ? (this.max - this.min) / 2 : this.value[0];
+  }
+
+  get to() {
+    return typeof this.value[1] === 'undefined' ? Infinity : this.value[1];
+  }
+
+  /**
+   * Wait for animation frame before performing update
+   */
   async performUpdate() {
     await new Promise((resolve) => requestAnimationFrame(() => resolve()));
     super.performUpdate();
   }
 
+  /**
+   * Keep focus on corresponding input to keep sliding when intersection occurs
+   * @param {Map} changedProps
+   */
   updated(changedProps) {
     // First render
-    if (changedProps.has('from') && changedProps.has('to')) {
+    const value = changedProps.get('value');
+    if (!value || value.length === 0) {
       return;
     }
 
-    if (changedProps.has('from')) {
+    if (value[0] !== this.value[0]) {
       this.shadowRoot.querySelector('input[name="from"]').focus();
     }
 
-    if (changedProps.has('to')) {
+    if (value[1] !== this.value[1]) {
       this.shadowRoot.querySelector('input[name="to"]').focus();
     }
   }
 
+  /**
+   * Update value
+   * @param {Event} ev
+   */
   handleChange(ev) {
     const { target } = ev;
     const { name } = target;
@@ -66,7 +128,7 @@ export class InputSlider extends LitElement {
     const from = this.from;
     const to = this.to;
 
-    const value = Number(target.value);
+    const newValue = Number(target.value);
 
     if (
       (name === 'from' && this.sliderState !== SLIDER_STATE.SLIDING_TO) ||
@@ -76,41 +138,41 @@ export class InputSlider extends LitElement {
       if (this.sliderState === SLIDER_STATE.NOT_SLIDING) {
         // Click on the second half of the range
         // ------o=======x==o------
-        const isSetToInsideRange = value > (to - from) / 2 + from;
+        const isSetToInsideRange = newValue > (to - from) / 2 + from;
 
         // Click on the right outside range
         // ------o===========o--x---
-        const isSetToOutsideRange = value > to;
+        const isSetToOutsideRange = newValue > to;
 
         if (isSetToInsideRange || isSetToOutsideRange) {
-          this.to = value;
+          this.value = [from, newValue];
           this.performUpdate();
           return;
         }
       }
 
-      if (value > to) {
-        // Force direction change if value > prevValue + 1
-        this.from = to;
-        this.to = value;
+      if (newValue > to) {
+        // Force direction change if newValue > prevValue + 1
+        this.value = [to, newValue];
       } else {
-        this.from = value;
+        this.value = to === Infinity ? [newValue] : [newValue, to];
       }
 
-      // Change slider direction when value === to
-      this.sliderState = value < to ? SLIDER_STATE.SLIDING_FROM : SLIDER_STATE.SLIDING_TO;
+      // Change slider direction when newValue === to
+      this.sliderState = newValue < to ? SLIDER_STATE.SLIDING_FROM : SLIDER_STATE.SLIDING_TO;
     } else {
-      if (value < from) {
-        this.to = from;
-        this.from = value;
+      if (newValue < from) {
+        // Force direction change if newValue > prevValue + 1
+        this.value = [newValue, from];
       } else {
-        this.to = value;
+        this.value = [from, newValue];
       }
 
-      // Change slider direction when value === from
-      this.sliderState = value > from ? SLIDER_STATE.SLIDING_TO : SLIDER_STATE.SLIDING_FROM;
+      // Change slider direction when newValue === from
+      this.sliderState = newValue > from ? SLIDER_STATE.SLIDING_TO : SLIDER_STATE.SLIDING_FROM;
     }
 
+    // Start an update
     this.performUpdate();
   }
 
@@ -127,11 +189,14 @@ export class InputSlider extends LitElement {
   }
 
   render() {
+    const { from, to, min, max } = this;
+    const isRange = to < Infinity;
+
     const styles = {
-      '--from': this.from,
-      '--to': this.to,
-      '--min': this.min,
-      '--max': this.max,
+      '--from': isRange ? from : min,
+      '--to': isRange ? to : from,
+      '--min': min,
+      '--max': max,
     };
 
     return html`
@@ -143,9 +208,9 @@ export class InputSlider extends LitElement {
         @keyup=${this.resetSliding}
       >
         <!-- From -->
-        ${this.renderInput('from', this.from)}
+        ${this.renderInput('from', from)}
         <!-- To -->
-        ${this.renderInput('to', this.to)}
+        ${isRange ? this.renderInput('to', to) : null}
       </div>
     `;
   }
