@@ -1,0 +1,12 @@
+{
+  "extends": ["plugin:prettier/recommended"],
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2020
+  },
+  "ignorePatterns": ["build/", "node_modules/"]
+}
