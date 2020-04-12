@@ -76,13 +76,21 @@ export class InputSlider extends LitElement {
   }
 
   get to() {
-    return typeof this.value[1] === 'undefined' ? Infinity : this.value[1];
+    return typeof this.value[1] === 'undefined' ? null : this.value[1];
+  }
+
+  set from(from) {
+    this.value = typeof this.value[1] === 'undefined' ? [from] : [from, this.value[1]];
+  }
+
+  set to(to) {
+    this.value = [this.from, to];
   }
 
   constructor() {
     super();
 
-    // Initialize properties
+    // Default properties
     this.min = 0;
     this.max = 100;
     this.step = 1;
@@ -92,7 +100,7 @@ export class InputSlider extends LitElement {
   }
 
   /**
-   * Wait for animation frame before performing update
+   * Reschedule update
    */
   async performUpdate() {
     await new Promise((resolve) => requestAnimationFrame(() => resolve()));
@@ -104,7 +112,7 @@ export class InputSlider extends LitElement {
    * @param {Map} changedProps
    */
   updated(changedProps) {
-    // First render
+    // First render, do nothing
     const value = changedProps.get('value');
     if (!value || value.length === 0) {
       return;
@@ -128,7 +136,7 @@ export class InputSlider extends LitElement {
     const { name } = target;
 
     const from = this.from;
-    const to = this.to;
+    const to = this.to === null ? Number.POSITIVE_INFINITY : this.to;
 
     const newValue = Number(target.value);
 
@@ -147,7 +155,7 @@ export class InputSlider extends LitElement {
         const isSetToOutsideRange = newValue > to;
 
         if (isSetToInsideRange || isSetToOutsideRange) {
-          this.value = [from, newValue];
+          this.to = newValue;
           this.performUpdate();
           return;
         }
@@ -157,7 +165,7 @@ export class InputSlider extends LitElement {
         // Force direction change if newValue > prevValue + 1
         this.value = [to, newValue];
       } else {
-        this.value = to === Infinity ? [newValue] : [newValue, to];
+        this.from = newValue;
       }
 
       // Change slider direction when newValue === to
@@ -167,7 +175,7 @@ export class InputSlider extends LitElement {
         // Force direction change if newValue > prevValue + 1
         this.value = [newValue, from];
       } else {
-        this.value = [from, newValue];
+        this.to = newValue;
       }
 
       // Change slider direction when newValue === from
@@ -184,6 +192,38 @@ export class InputSlider extends LitElement {
 
   resetSliding() {
     this.sliderState = SLIDER_STATE.NOT_SLIDING;
+  }
+
+  stepDown() {
+    this.stepFromDown();
+  }
+
+  stepUp() {
+    this.stepFromUp();
+  }
+
+  stepFromDown() {
+    const { from, min, step } = this;
+    this.from = Math.max(min, from - step);
+  }
+
+  stepFromUp() {
+    const { from, to, max, step } = this;
+    this.from = Math.min(max, to === null ? Number.POSITIVE_INFINITY : to, from + step);
+  }
+
+  stepToDown() {
+    const { from, to, step } = this;
+    if (to !== null) {
+      this.to = Math.max(from, to - step);
+    }
+  }
+
+  stepToUp() {
+    const { to, max, step } = this;
+    if (to !== null) {
+      this.to = Math.min(max, to + step);
+    }
   }
 
   renderInput(name, value) {
@@ -208,7 +248,7 @@ export class InputSlider extends LitElement {
 
   render() {
     const { from, to, min, max } = this;
-    const isRange = to < Infinity;
+    const isRange = to !== null;
 
     const styles = {
       '--from': isRange ? from : min,
