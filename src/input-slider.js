@@ -71,6 +71,14 @@ export class InputSlider extends LitElement {
     return 'input-slider';
   }
 
+  get from() {
+    return typeof this.value[0] === 'undefined' ? (this.max - this.min) / 2 : this.value[0];
+  }
+
+  get to() {
+    return typeof this.value[1] === 'undefined' ? Infinity : this.value[1];
+  }
+
   constructor() {
     super();
 
@@ -81,14 +89,6 @@ export class InputSlider extends LitElement {
     this.value = [];
 
     this.sliderState = SLIDER_STATE.NOT_SLIDING;
-  }
-
-  get from() {
-    return typeof this.value[0] === 'undefined' ? (this.max - this.min) / 2 : this.value[0];
-  }
-
-  get to() {
-    return typeof this.value[1] === 'undefined' ? Infinity : this.value[1];
   }
 
   /**
@@ -123,7 +123,7 @@ export class InputSlider extends LitElement {
    * Update value
    * @param {Event} ev
    */
-  handleChange(ev) {
+  handleInput(ev) {
     const { target } = ev;
     const { name } = target;
 
@@ -178,16 +178,22 @@ export class InputSlider extends LitElement {
     this.performUpdate();
   }
 
+  handleChange() {
+    this.dispatchEvent(new Event('change'));
+  }
+
   resetSliding() {
     this.sliderState = SLIDER_STATE.NOT_SLIDING;
   }
 
   renderInput(name, value) {
     const { min, max, step } = this;
+
     const classes = [
       `${this.constructor.CLASS_NAME}__input`, //
       `${this.constructor.CLASS_NAME}__input--${name}`,
     ];
+
     return html`<input
       type="range"
       min=${min}
@@ -196,6 +202,7 @@ export class InputSlider extends LitElement {
       name=${name}
       .value=${live(value)}
       class=${classes.join(' ')}
+      @change=${this.handleChange}
     />`;
   }
 
@@ -214,7 +221,7 @@ export class InputSlider extends LitElement {
       <div
         class=${this.constructor.CLASS_NAME}
         style=${styleMap(styles)}
-        @input=${this.handleChange}
+        @input=${this.handleInput}
         @pointerup=${this.resetSliding}
         @keyup=${this.resetSliding}
       >
