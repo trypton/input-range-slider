@@ -36,8 +36,12 @@
     "input",
     "range",
     "slider",
+    "input-slider",
+    "input-range",
+    "range-slider",
     "web-components",
-    "custom-element"
+    "custom-element",
+    "lit-element"
   ],
   "author": "Karen Ananiev",
   "license": "MIT"
