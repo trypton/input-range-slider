@@ -59,6 +59,7 @@ export class InputSlider extends LitElement {
       },
       min: { type: Number },
       max: { type: Number },
+      step: { type: Number },
     };
   }
 
@@ -76,6 +77,7 @@ export class InputSlider extends LitElement {
     // Initialize properties
     this.min = 0;
     this.max = 100;
+    this.step = 1;
     this.value = [];
 
     this.sliderState = SLIDER_STATE.NOT_SLIDING;
@@ -181,11 +183,20 @@ export class InputSlider extends LitElement {
   }
 
   renderInput(name, value) {
+    const { min, max, step } = this;
     const classes = [
       `${this.constructor.CLASS_NAME}__input`, //
       `${this.constructor.CLASS_NAME}__input--${name}`,
     ];
-    return html`<input type="range" name=${name} .value=${live(value)} class=${classes.join(' ')} />`;
+    return html`<input
+      type="range"
+      min=${min}
+      max=${max}
+      step=${step}
+      name=${name}
+      .value=${live(value)}
+      class=${classes.join(' ')}
+    />`;
   }
 
   render() {
