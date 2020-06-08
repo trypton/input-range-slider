@@ -1,7 +1,4 @@
-import { LitElement, html } from 'lit-element';
-import { styleMap } from 'lit-html/directives/style-map';
-import { live } from 'lit-html/directives/live';
-import { inputSliderStyles } from './input-slider-styles';
+import template from './input-slider-template';
 
 const SLIDER_STATE = {
   NOT_SLIDING: 'NOT_SLIDING',
@@ -9,128 +6,102 @@ const SLIDER_STATE = {
   SLIDING_TO: 'SLIDING_TO',
 };
 
-export class InputSlider extends LitElement {
-  static get properties() {
-    return {
-      value: {
-        type: Array,
-        reflect: true,
-        converter: {
-          fromAttribute: (value) => {
-            try {
-              const arr = JSON.parse(value);
+export class InputSlider extends HTMLElement {
+  get value() {
+    if (!this.hasAttribute('value')) {
+      return [];
+    }
 
-              if (Array.isArray(arr)) {
-                const from = typeof arr[0] !== 'undefined' ? Number(arr[0]) : Number.NaN;
-                if (Number.isNaN(from) || !Number.isFinite(from)) {
-                  return [];
-                }
+    const value = this.getAttribute('value');
 
-                const to = typeof arr[1] !== 'undefined' ? Number(arr[1]) : Number.NaN;
-                if (Number.isNaN(to) || !Number.isFinite(to)) {
-                  return [from];
-                }
+    try {
+      const arr = JSON.parse(value);
 
-                return [from, to];
-              }
-            } catch {
-              return [];
-            }
+      if (Array.isArray(arr)) {
+        const from = typeof arr[0] !== 'undefined' ? Number(arr[0]) : Number.NaN;
+        if (Number.isNaN(from) || !Number.isSafeInteger(from)) {
+          return [];
+        }
 
-            const number = value.length ? Number(value) : Number.NaN;
-            if (!Number.isNaN(number) && Number.isFinite(number)) {
-              return [number];
-            }
+        const to = typeof arr[1] !== 'undefined' ? Number(arr[1]) : Number.NaN;
+        if (Number.isNaN(to) || !Number.isSafeInteger(to)) {
+          return [from];
+        }
 
-            return [];
-          },
-          toAttribute: (value) => {
-            if (!Array.isArray(value) || typeof value[0] === 'undefined') {
-              return '';
-            }
+        return [from, to];
+      }
+    } catch {
+      return [];
+    }
 
-            if (typeof value[1] === 'undefined') {
-              return value[0].toString();
-            }
+    const number = value.length ? Number(value) : Number.NaN;
+    if (!Number.isNaN(number) && Number.isSafeInteger(number)) {
+      return [number];
+    }
 
-            return JSON.stringify(value);
-          },
-        },
-      },
-      min: { type: Number },
-      max: { type: Number },
-      step: { type: Number },
-    };
+    return [];
   }
 
-  static get styles() {
-    return inputSliderStyles;
-  }
+  set value(value) {
+    if (!Array.isArray(value) || typeof value[0] === 'undefined') {
+      this.setAttribute('value', '');
+    }
 
-  static get CLASS_NAME() {
-    return 'input-slider';
+    if (typeof value[1] === 'undefined') {
+      this.setAttribute('value', value[0]);
+    } else {
+      this.setAttribute('value', JSON.stringify(value));
+    }
   }
 
   get from() {
     return typeof this.value[0] === 'undefined' ? (this.max - this.min) / 2 : this.value[0];
   }
 
-  get to() {
-    return typeof this.value[1] === 'undefined' ? null : this.value[1];
-  }
-
   set from(from) {
     this.value = typeof this.value[1] === 'undefined' ? [from] : [from, this.value[1]];
+  }
+
+  get to() {
+    return typeof this.value[1] === 'undefined' ? null : this.value[1];
   }
 
   set to(to) {
     this.value = [this.from, to];
   }
 
+  get min() {
+    return this._getNumericAttribute('min', 0);
+  }
+
+  get max() {
+    return this._getNumericAttribute('max', 100);
+  }
+
+  get step() {
+    return this._getNumericAttribute('step', 1);
+  }
+
   constructor() {
     super();
 
-    // Default properties
-    this.min = 0;
-    this.max = 100;
-    this.step = 1;
-    this.value = [];
+    const shadowRoot = this.attachShadow({ mode: 'open' });
+    shadowRoot.appendChild(template.content.cloneNode(true));
 
     this.sliderState = SLIDER_STATE.NOT_SLIDING;
+
+    // Initialize
+    this.performUpdate();
+
+    const root = this.shadowRoot.querySelector('div');
+    root.addEventListener('input', this.handleInput.bind(this));
+    root.addEventListener('pointerup', this.resetSliderState.bind(this));
+    root.addEventListener('keyup', this.resetSliderState.bind(this));
+
+    // Fire change event on custom element
+    root.addEventListener('change', this.handleChange.bind(this));
   }
 
-  /**
-   * Reschedule update
-   */
-  async performUpdate() {
-    await new Promise((resolve) => requestAnimationFrame(() => resolve()));
-    super.performUpdate();
-  }
-
-  /**
-   * Keep focus on corresponding input to keep sliding when intersection occurs
-   * @param {Map} changedProps
-   */
-  updated(changedProps) {
-    // First render, do nothing
-    const value = changedProps.get('value');
-    if (!value || value.length === 0) {
-      return;
-    }
-
-    if (value[0] !== this.value[0]) {
-      this.shadowRoot.querySelector('input[name="from"]').focus();
-    }
-
-    if (value[1] !== this.value[1]) {
-      this.shadowRoot.querySelector('input[name="to"]').focus();
-    }
-  }
-
-  /**
-   * Update value
-   * @param {Event} ev
-   */
   handleInput(ev) {
     const { target } = ev;
     const { name } = target;
@@ -148,7 +119,7 @@ export class InputSlider extends LitElement {
       if (this.sliderState === SLIDER_STATE.NOT_SLIDING) {
         // Click on the second half of the range
         // ------o=======x==o------
-        const isSetToInsideRange = newValue > (to - from) / 2 + from;
+        const isSetToInsideRange = newValue > Math.round((to - from) / 2) + from;
 
         // Click on the right outside range
         // ------o===========o--x---
@@ -182,7 +153,6 @@ export class InputSlider extends LitElement {
       this.sliderState = newValue > from ? SLIDER_STATE.SLIDING_TO : SLIDER_STATE.SLIDING_FROM;
     }
 
-    // Start an update
     this.performUpdate();
   }
 
@@ -190,87 +160,55 @@ export class InputSlider extends LitElement {
     this.dispatchEvent(new Event('change'));
   }
 
-  resetSliding() {
+  resetSliderState() {
     this.sliderState = SLIDER_STATE.NOT_SLIDING;
+    this.performUpdate();
   }
 
-  stepDown() {
-    this.stepFromDown();
-  }
+  performInputUpdate(name, value, hidden = false) {
+    const input = this.shadowRoot.querySelector(`input[name="${name}"]`);
+    input.setAttribute('min', this.min);
+    input.setAttribute('max', this.max);
+    input.setAttribute('step', this.step);
 
-  stepUp() {
-    this.stepFromUp();
-  }
+    input.value = value;
+    input.setAttribute('value', value);
 
-  stepFromDown() {
-    const { from, min, step } = this;
-    this.from = Math.max(min, from - step);
-  }
-
-  stepFromUp() {
-    const { from, to, max, step } = this;
-    this.from = Math.min(max, to === null ? Number.POSITIVE_INFINITY : to, from + step);
-  }
-
-  stepToDown() {
-    const { from, to, step } = this;
-    if (to !== null) {
-      this.to = Math.max(from, to - step);
+    if (hidden) {
+      input.setAttribute('hidden', '');
+    } else {
+      input.removeAttribute('hidden');
     }
   }
 
-  stepToUp() {
-    const { to, max, step } = this;
-    if (to !== null) {
-      this.to = Math.min(max, to + step);
-    }
-  }
-
-  renderInput(name, value) {
-    const { min, max, step } = this;
-
-    const classes = [
-      `${this.constructor.CLASS_NAME}__input`, //
-      `${this.constructor.CLASS_NAME}__input--${name}`,
-    ];
-
-    return html`<input
-      type="range"
-      min=${min}
-      max=${max}
-      step=${step}
-      name=${name}
-      .value=${live(value)}
-      class=${classes.join(' ')}
-      @change=${this.handleChange}
-    />`;
-  }
-
-  render() {
+  performUpdate() {
     const { from, to, min, max } = this;
     const isRange = to !== null;
 
-    const styles = {
-      '--from': isRange ? from : min,
-      '--to': isRange ? to : from,
-      '--min': min,
-      '--max': max,
-    };
+    const root = this.shadowRoot.querySelector('div');
+    root.style.setProperty('--from', isRange ? from : min);
+    root.style.setProperty('--to', isRange ? to : from);
+    root.style.setProperty('--min', min);
+    root.style.setProperty('--max', max);
 
-    return html`
-      <div
-        class=${this.constructor.CLASS_NAME}
-        style=${styleMap(styles)}
-        @input=${this.handleInput}
-        @pointerup=${this.resetSliding}
-        @keyup=${this.resetSliding}
-      >
-        <!-- From -->
-        ${this.renderInput('from', from)}
-        <!-- To -->
-        ${isRange ? this.renderInput('to', to) : null}
-      </div>
-    `;
+    root.classList[this.sliderState !== SLIDER_STATE.NOT_SLIDING ? 'add' : 'remove']('input-slider--sliding');
+
+    this.performInputUpdate('from', from);
+    this.performInputUpdate('to', to, !isRange);
+  }
+
+  _getNumericAttribute(name, defaultValue = 0) {
+    if (!this.hasAttribute(name)) {
+      return defaultValue;
+    }
+
+    const value = Number(this.getAttribute(name));
+
+    if (Number.isNaN(value) || !Number.isSafeInteger(value)) {
+      return defaultValue;
+    }
+
+    return value;
   }
 }
 
