@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      background: #fafafa;
+    }
+    .input-range-slider {
+      align-items: center;
+      display: flex;
+      justify-content: center;
+      min-height: 33vh;
+      margin: 0 auto;
+      width: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div id="demo"></div>
+
+  <script type="module">
+    import { html, render } from 'lit-html';
+    import '../dist/input-range-slider.js';
+
+    render(
+      html`
+        <div class="input-range-slider">
+          <input-range-slider></input-range-slider>
+        </div>
+        <div class="input-range-slider">
+          <input-range-slider value="10" step="5"></input-range-slider>
+        </div>
+        <div class="input-range-slider">
+          <input-range-slider value="[10, 50]"></input-range-slider>
+        </div>
+      `,
+      document.querySelector('#demo')
+    );
+  </script>
+</body>
+</html>

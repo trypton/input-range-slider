@@ -1,5 +1,9 @@
-const BASE_CLASS_NAME = 'input-slider';
-const BROWSER_PREFIX = { WEBKIT: 'WEBKIT', MOZ: 'MOZ' };
+export const BASE_CLASS_NAME = 'input-range-slider';
+
+enum BROWSER_PREFIX {
+  WEBKIT = 'WEBKIT',
+  MOZ = 'MOZ',
+}
 
 const trackBrowserPrefixes = {
   [BROWSER_PREFIX.WEBKIT]: '-webkit-slider-runnable-track',
@@ -11,10 +15,10 @@ const thumbBrowserPrefixes = {
   [BROWSER_PREFIX.MOZ]: '-moz-range-thumb',
 };
 
-const trackCss = (browser) => {
+const trackCss = (browser: BROWSER_PREFIX) => {
   const prefix = trackBrowserPrefixes[browser];
   return `
-    .input-slider__input::${prefix} {
+    .${BASE_CLASS_NAME}__input::${prefix} {
       background: linear-gradient(
         90deg,
         var(--color-track) var(--track-from, 0%),
@@ -26,20 +30,20 @@ const trackCss = (browser) => {
       width: 100%;
     }
 
-    .input-slider__input--from::${prefix} {
+    .${BASE_CLASS_NAME}__input--from::${prefix} {
       pointer-events: auto;
     }
 
-    .input-slider__input--to::${prefix} {
+    .${BASE_CLASS_NAME}__input--to::${prefix} {
       background: transparent;
     }
   `;
 };
 
-const thumbCss = (browser) => {
+const thumbCss = (browser: BROWSER_PREFIX) => {
   const prefix = thumbBrowserPrefixes[browser];
   return `
-    .input-slider__input::${prefix} {
+    .${BASE_CLASS_NAME}__input::${prefix} {
       -webkit-appearance: none;
       background-color: var(--color-thumb);
       border: none;
@@ -53,34 +57,31 @@ const thumbCss = (browser) => {
       z-index: 1;
     }
 
-    .input-slider--sliding .input-slider__input::${prefix},
-    .input-slider__input:focus::${prefix} {
+    .${BASE_CLASS_NAME}--sliding .${BASE_CLASS_NAME}__input::${prefix},
+    .${BASE_CLASS_NAME}__input:focus::${prefix} {
       box-shadow: 0px 0px 1px 3px var(--color-outline);
     }
 
-    .input-slider--sliding .input-slider__input::${prefix},
-    .input-slider__input:active::${prefix} {
+    .${BASE_CLASS_NAME}--sliding .${BASE_CLASS_NAME}__input::${prefix},
+    .${BASE_CLASS_NAME}__input:active::${prefix} {
       transform: scale(1.15);
     }
   `;
 };
 
-const inputHtml = (name) => {
-  const classes = [
-    `${BASE_CLASS_NAME}__input`, //
-    `${BASE_CLASS_NAME}__input--${name}`,
-  ];
-  return `<input type="range" name="${name}" class="${classes.join(' ')}" />`;
+const inputHtml = ({ name, hidden = false }: { name: string; hidden?: boolean }) => {
+  const classes = [`${BASE_CLASS_NAME}__input`, `${BASE_CLASS_NAME}__input--${name}`];
+  return `<input type="range" name="${name}" class="${classes.join(' ')}" ${hidden ? 'hidden' : ''} />`;
 };
 
-const inputSliderTemplate = document.createElement('template');
-inputSliderTemplate.innerHTML = `
+const template = document.createElement('template');
+template.innerHTML = `
   <style>
     :host {
       --color-primary: #3f51b5;
       --color-fill: var(--color-primary);
       --color-thumb: var(--color-primary);
-      --color-outline: rgba(159, 168, 218, 0.5);
+      --color-outline: rgb(159 168 218 / 50%);
       --color-track: #eee;
       --track-height: 4px;
       --thumb-size: 18px;
@@ -89,14 +90,14 @@ inputSliderTemplate.innerHTML = `
       width: 100%;
     }
 
-    .input-slider {
+    .${BASE_CLASS_NAME} {
       --track-from: calc((var(--from) * 100%) / (var(--max) - var(--min)));
       --track-to: calc((var(--to) * 100%) / (var(--max) - var(--min)));
 
       position: relative;
     }
 
-    .input-slider__input {
+    .${BASE_CLASS_NAME}__input {
       -webkit-appearance: none;
       background-color: transparent;
       cursor: pointer;
@@ -110,13 +111,13 @@ inputSliderTemplate.innerHTML = `
     }
 
     /* Focus state re-applied on a thumb element */
-    .input-slider__input:focus {
+    .${BASE_CLASS_NAME}__input:focus {
       border: 0;
       outline: none;
     }
 
     /* Remove Firefox dotted border */
-    .input-slider__input::-moz-focus-outer {
+    .${BASE_CLASS_NAME}__input::-moz-focus-outer {
       border: 0;
     }
 
@@ -130,9 +131,9 @@ inputSliderTemplate.innerHTML = `
   </style>
 
   <div class="${BASE_CLASS_NAME}">
-    ${inputHtml('from')}
-    ${inputHtml('to')}
+    ${inputHtml({ name: 'from' })}
+    ${inputHtml({ name: 'to', hidden: true })}
   </div>
 `;
 
-export default inputSliderTemplate;
+export default template;

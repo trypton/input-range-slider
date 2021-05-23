@@ -1,9 +1,13 @@
 import { css, unsafeCSS } from 'lit-element';
 
-const BROWSER_PREFIX = {
-  WEBKIT: 'WEBKIT',
-  MOZ: 'MOZ',
-};
+export const BASE_CLASS_NAME = 'input-range-slider';
+
+const className = unsafeCSS(BASE_CLASS_NAME);
+
+enum BROWSER_PREFIX {
+  WEBKIT = 'WEBKIT',
+  MOZ = 'MOZ',
+}
 
 const trackBrowserPrefixes = {
   [BROWSER_PREFIX.WEBKIT]: '-webkit-slider-runnable-track',
@@ -15,11 +19,10 @@ const thumbBrowserPrefixes = {
   [BROWSER_PREFIX.MOZ]: '-moz-range-thumb',
 };
 
-const trackStyle = (browser) => {
+const trackStyle = (browser: BROWSER_PREFIX) => {
   const prefix = unsafeCSS(trackBrowserPrefixes[browser]);
-
   return css`
-    .input-slider__input::${prefix} {
+    .${className}__input::${prefix} {
       background: linear-gradient(
         90deg,
         var(--color-track) var(--track-from, 0%),
@@ -31,22 +34,21 @@ const trackStyle = (browser) => {
       width: 100%;
     }
 
-    .input-slider__input--from::${prefix} {
+    .${className}__input--from::${prefix} {
       pointer-events: auto;
     }
 
-    .input-slider__input--to::${prefix} {
+    .${className}__input--to::${prefix} {
       background: transparent;
     }
   `;
 };
 
-const thumbStyle = (browser) => {
+const thumbStyle = (browser: BROWSER_PREFIX) => {
   const prefix = unsafeCSS(thumbBrowserPrefixes[browser]);
-
   return css`
-    .input-slider__input::${prefix} {
-      -webkit-appearance: none;
+    .${className}__input::${prefix} {
+      appearance: none;
       background-color: var(--color-thumb);
       border: none;
       border-radius: var(--thumb-size);
@@ -58,22 +60,22 @@ const thumbStyle = (browser) => {
       width: var(--thumb-size);
     }
 
-    .input-slider__input:focus::${prefix} {
+    .${className}__input:focus::${prefix} {
       box-shadow: 0px 0px 1px 3px var(--color-outline);
     }
 
-    .input-slider__input:active::${prefix} {
+    .${className}__input:active::${prefix} {
       transform: scale(1.15);
     }
   `;
 };
 
-export const inputSliderStyles = css`
+const styles = css`
   :host {
     --color-primary: #3f51b5;
     --color-fill: var(--color-primary);
     --color-thumb: var(--color-primary);
-    --color-outline: rgba(159, 168, 218, 0.5);
+    --color-outline: rgb(159 168 218 / 50%);
     --color-track: #eee;
     --track-height: 4px;
     --thumb-size: 18px;
@@ -82,15 +84,15 @@ export const inputSliderStyles = css`
     width: 100%;
   }
 
-  .input-slider {
+  .${className} {
     --track-from: calc((var(--from) * 100%) / (var(--max) - var(--min)));
     --track-to: calc((var(--to) * 100%) / (var(--max) - var(--min)));
 
     position: relative;
   }
 
-  .input-slider__input {
-    -webkit-appearance: none;
+  .${className}__input {
+    appearance: none;
     background-color: transparent;
     cursor: pointer;
     height: 0;
@@ -103,13 +105,13 @@ export const inputSliderStyles = css`
   }
 
   /* Focus state re-applied on a thumb element */
-  .input-slider__input:focus {
+  .${className}__input:focus {
     border: 0;
     outline: none;
   }
 
   /* Remove Firefox dotted border */
-  .input-slider__input::-moz-focus-outer {
+  .${className}__input::-moz-focus-outer {
     border: 0;
   }
 
@@ -121,3 +123,5 @@ export const inputSliderStyles = css`
   ${trackStyle(BROWSER_PREFIX.MOZ)}
   ${thumbStyle(BROWSER_PREFIX.MOZ)}
 `;
+
+export default styles;

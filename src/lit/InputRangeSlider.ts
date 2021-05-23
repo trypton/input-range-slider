@@ -1,22 +1,33 @@
 import { LitElement, html } from 'lit-element';
 import { styleMap } from 'lit-html/directives/style-map';
 import { live } from 'lit-html/directives/live';
-import { inputSliderStyles } from './input-slider-styles';
 
-const SLIDER_STATE = {
-  NOT_SLIDING: 'NOT_SLIDING',
-  SLIDING_FROM: 'SLIDING_FROM',
-  SLIDING_TO: 'SLIDING_TO',
-};
+import styles, { BASE_CLASS_NAME } from './InputRangeSlider.styles';
 
-export class InputSlider extends LitElement {
+enum SLIDER_STATE {
+  NOT_SLIDING = 'NOT_SLIDING',
+  SLIDING_FROM = 'SLIDING_FROM',
+  SLIDING_TO = 'SLIDING_TO',
+}
+
+export class InputRangeSlider extends LitElement {
+  private value: number[];
+
+  private min: number;
+
+  private max: number;
+
+  private step: number;
+
+  private sliderState: SLIDER_STATE;
+
   static get properties() {
     return {
       value: {
         type: Array,
         reflect: true,
         converter: {
-          fromAttribute: (value) => {
+          fromAttribute: (value: string) => {
             try {
               const arr = JSON.parse(value);
 
@@ -44,7 +55,7 @@ export class InputSlider extends LitElement {
 
             return [];
           },
-          toAttribute: (value) => {
+          toAttribute: (value?: number[]) => {
             if (!Array.isArray(value) || typeof value[0] === 'undefined') {
               return '';
             }
@@ -64,11 +75,7 @@ export class InputSlider extends LitElement {
   }
 
   static get styles() {
-    return inputSliderStyles;
-  }
-
-  static get CLASS_NAME() {
-    return 'input-slider';
+    return styles;
   }
 
   get from() {
@@ -83,7 +90,12 @@ export class InputSlider extends LitElement {
     this.value = typeof this.value[1] === 'undefined' ? [from] : [from, this.value[1]];
   }
 
-  set to(to) {
+  set to(to: number | null) {
+    if (to === null) {
+      this.value = [this.from];
+      return;
+    }
+
     this.value = [this.from, to];
   }
 
@@ -103,7 +115,7 @@ export class InputSlider extends LitElement {
    * Reschedule update
    */
   async performUpdate() {
-    await new Promise((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
     super.performUpdate();
   }
 
@@ -111,19 +123,25 @@ export class InputSlider extends LitElement {
    * Keep focus on corresponding input to keep sliding when intersection occurs
    * @param {Map} changedProps
    */
-  updated(changedProps) {
+  updated(changedProps: Map<string | number | symbol, unknown>) {
     // First render, do nothing
-    const value = changedProps.get('value');
+    const value = changedProps.get('value') as undefined | number[];
     if (!value || value.length === 0) {
       return;
     }
 
     if (value[0] !== this.value[0]) {
-      this.shadowRoot.querySelector('input[name="from"]').focus();
+      const from = this.shadowRoot?.querySelector('input[name="from"]');
+      if (from instanceof HTMLElement) {
+        from.focus();
+      }
     }
 
     if (value[1] !== this.value[1]) {
-      this.shadowRoot.querySelector('input[name="to"]').focus();
+      const to = this.shadowRoot?.querySelector('input[name="to"]');
+      if (to instanceof HTMLElement) {
+        to.focus();
+      }
     }
   }
 
@@ -131,14 +149,19 @@ export class InputSlider extends LitElement {
    * Update value
    * @param {Event} ev
    */
-  handleInput(ev) {
-    const { target } = ev;
-    const { name } = target;
+  handleInput(evt: Event) {
+    const target = evt.target as HTMLInputElement;
 
-    const from = this.from;
+    const { name, value } = target;
+
+    if (!name || !value) {
+      return;
+    }
+
+    const { from } = this;
     const to = this.to === null ? Number.POSITIVE_INFINITY : this.to;
 
-    const newValue = Number(target.value);
+    const newValue = Number(value);
 
     if (
       (name === 'from' && this.sliderState !== SLIDER_STATE.SLIDING_TO) ||
@@ -226,12 +249,12 @@ export class InputSlider extends LitElement {
     }
   }
 
-  renderInput(name, value) {
+  renderInput(name: string, value: number) {
     const { min, max, step } = this;
 
     const classes = [
-      `${this.constructor.CLASS_NAME}__input`, //
-      `${this.constructor.CLASS_NAME}__input--${name}`,
+      `${BASE_CLASS_NAME}__input`, //
+      `${BASE_CLASS_NAME}__input--${name}`,
     ];
 
     return html`<input
@@ -240,6 +263,7 @@ export class InputSlider extends LitElement {
       max=${max}
       step=${step}
       name=${name}
+      aria-label="input range ${name}"
       .value=${live(value)}
       class=${classes.join(' ')}
       @change=${this.handleChange}
@@ -248,19 +272,18 @@ export class InputSlider extends LitElement {
 
   render() {
     const { from, to, min, max } = this;
-    const isRange = to !== null;
 
-    const styles = {
-      '--from': isRange ? from : min,
-      '--to': isRange ? to : from,
-      '--min': min,
-      '--max': max,
+    const style = {
+      '--from': (to !== null ? from : min).toString(),
+      '--to': (to !== null ? to : from).toString(),
+      '--min': min.toString(),
+      '--max': max.toString(),
     };
 
     return html`
       <div
-        class=${this.constructor.CLASS_NAME}
-        style=${styleMap(styles)}
+        class=${BASE_CLASS_NAME}
+        style=${styleMap(style)}
         @input=${this.handleInput}
         @pointerup=${this.resetSliderState}
         @keyup=${this.resetSliderState}
@@ -268,10 +291,8 @@ export class InputSlider extends LitElement {
         <!-- From -->
         ${this.renderInput('from', from)}
         <!-- To -->
-        ${isRange ? this.renderInput('to', to) : null}
+        ${to !== null ? this.renderInput('to', to) : null}
       </div>
     `;
   }
 }
-
-customElements.define('input-slider', InputSlider);
