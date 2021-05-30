@@ -1,68 +1,13 @@
+import InputRangeSliderBase, { SLIDER_STATE } from './InputRangeSlider.base';
 import template, { BASE_CLASS_NAME } from './InputRangeSlider.template';
 
-enum SLIDER_STATE {
-  NOT_SLIDING = 'NOT_SLIDING',
-  SLIDING_FROM = 'SLIDING_FROM',
-  SLIDING_TO = 'SLIDING_TO',
-}
-
-export class InputRangeSlider extends HTMLElement {
-  private sliderState: SLIDER_STATE;
-
+export class InputRangeSlider extends InputRangeSliderBase(HTMLElement) {
   get value(): number[] {
-    try {
-      const value = JSON.parse(this.getAttribute('value') || '');
-
-      if (Array.isArray(value)) {
-        const [from, to] = value;
-
-        if (!Number.isSafeInteger(from)) {
-          return [];
-        }
-
-        if (!Number.isSafeInteger(to)) {
-          return [from];
-        }
-
-        return [from, to];
-      }
-
-      if (Number.isSafeInteger(value)) {
-        return [value];
-      }
-    } catch {
-      return [];
-    }
-
-    return [];
+    return InputRangeSlider.fromValueAttr(this.getAttribute('value') || '');
   }
 
   set value(value) {
-    if (!Array.isArray(value) || typeof value[0] === 'undefined') {
-      this.setAttribute('value', '');
-    }
-
-    if (typeof value[1] === 'undefined') {
-      this.setAttribute('value', value[0].toString());
-    } else {
-      this.setAttribute('value', JSON.stringify(value));
-    }
-  }
-
-  get from() {
-    return typeof this.value[0] === 'undefined' ? (this.max - this.min) / 2 : this.value[0];
-  }
-
-  set from(from) {
-    this.value = typeof this.value[1] === 'undefined' ? [from] : [from, this.value[1]];
-  }
-
-  get to() {
-    return typeof this.value[1] === 'undefined' ? null : this.value[1];
-  }
-
-  set to(to) {
-    this.value = to === null ? [this.from] : [this.from, to];
+    this.setAttribute('value', InputRangeSlider.toValueAttr(value));
   }
 
   get min() {
@@ -83,8 +28,6 @@ export class InputRangeSlider extends HTMLElement {
     const shadowRoot = this.attachShadow({ mode: 'open' });
     shadowRoot.appendChild(template.content.cloneNode(true));
 
-    this.sliderState = SLIDER_STATE.NOT_SLIDING;
-
     // Initialize
     this.performUpdate();
 
@@ -97,71 +40,8 @@ export class InputRangeSlider extends HTMLElement {
     root?.addEventListener('change', this.handleChange.bind(this));
   }
 
-  handleInput(evt: Event) {
-    const target = evt.target as HTMLInputElement;
-
-    const { name, value } = target;
-
-    if (!name || !value) {
-      return;
-    }
-
-    const { from } = this;
-    const to = this.to === null ? Number.POSITIVE_INFINITY : this.to;
-
-    const newValue = Number(value);
-
-    if (
-      (name === 'from' && this.sliderState !== SLIDER_STATE.SLIDING_TO) ||
-      this.sliderState === SLIDER_STATE.SLIDING_FROM
-    ) {
-      // All clicks on the track will always be handled by `from` input
-      if (this.sliderState === SLIDER_STATE.NOT_SLIDING) {
-        // Click on the second half of the range
-        // ------o=======x==o------
-        const isSetToInsideRange = newValue > Math.round((to - from) / 2) + from;
-
-        // Click on the right outside range
-        // ------o===========o--x---
-        const isSetToOutsideRange = newValue > to;
-
-        if (isSetToInsideRange || isSetToOutsideRange) {
-          this.to = newValue;
-          this.performUpdate();
-          return;
-        }
-      }
-
-      if (newValue > to) {
-        // Force direction change if newValue > prevValue + 1
-        this.value = [to, newValue];
-      } else {
-        this.from = newValue;
-      }
-
-      // Change slider direction when newValue === to
-      this.sliderState = newValue < to ? SLIDER_STATE.SLIDING_FROM : SLIDER_STATE.SLIDING_TO;
-    } else {
-      if (newValue < from) {
-        // Force direction change if newValue > prevValue + 1
-        this.value = [newValue, from];
-      } else {
-        this.to = newValue;
-      }
-
-      // Change slider direction when newValue === from
-      this.sliderState = newValue > from ? SLIDER_STATE.SLIDING_TO : SLIDER_STATE.SLIDING_FROM;
-    }
-
-    this.performUpdate();
-  }
-
-  handleChange() {
-    this.dispatchEvent(new Event('change'));
-  }
-
   resetSliderState() {
-    this.sliderState = SLIDER_STATE.NOT_SLIDING;
+    super.resetSliderState();
     this.performUpdate();
   }
 
@@ -191,7 +71,7 @@ export class InputRangeSlider extends HTMLElement {
     root?.style.setProperty('--min', min.toString());
     root?.style.setProperty('--max', max.toString());
 
-    root?.classList[this.sliderState !== SLIDER_STATE.NOT_SLIDING ? 'add' : 'remove'](`${BASE_CLASS_NAME}--sliding`);
+    root?.classList[this.state !== SLIDER_STATE.NOT_SLIDING ? 'add' : 'remove'](`${BASE_CLASS_NAME}--sliding`);
 
     this.performInputUpdate('from', from);
 
