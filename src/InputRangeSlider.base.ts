@@ -19,7 +19,11 @@ const InputRangeSliderBase = <TBase extends Constructor<HTMLElement>>(Base: TBas
     #sliderState: SLIDER_STATE = SLIDER_STATE.NOT_SLIDING;
 
     get from() {
-      return typeof this.value[0] === 'undefined' ? (this.#max - this.#min) / 2 : this.value[0];
+      if (typeof this.value[0] === 'undefined') {
+        // Default value
+        return this.#max < this.#min ? this.#min : this.#min + (this.#max - this.#min) / 2;
+      }
+      return this.value[0];
     }
 
     get to() {
