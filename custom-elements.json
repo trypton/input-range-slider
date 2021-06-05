@@ -6,15 +6,27 @@
       "description": "An input range component with min and max values support",
       "properties": [
         {
-          "name": "title",
-          "type": "String",
-          "description": "The title of your component",
-          "default": "Hey there"
+          "name": "value",
+          "type": "Number|Array<Number>",
+          "description": "Input value may be an integer value or an array with a range",
+          "default": "50"
         },
         {
-          "name": "counter",
+          "name": "min",
           "type": "Number",
-          "description": "An action counter",
+          "description": "The minimum permitted value",
+          "default": 0
+        },
+        {
+          "name": "max",
+          "type": "Number",
+          "description": "The maximum permitted value",
+          "default": 0
+        },
+        {
+          "name": "step",
+          "type": "Number",
+          "description": "The stepping interval, used both for user interface and validation purposes",
           "default": 0
         }
       ],
@@ -22,9 +34,39 @@
       "slots": [],
       "cssProperties": [
         {
-          "name": "--input-slider-range-text-color",
-          "description": "Main Text Color",
-          "type": "Color"
+          "name": "--input-slider-range-color-primary",
+          "description": "Main Color",
+          "default": "#3f51b5"
+        },
+        {
+          "name": "--input-slider-range-color-track",
+          "description": "Track Color",
+          "default": "#eee"
+        },
+        {
+          "name": "--input-slider-range-color-fill",
+          "description": "Track Fill Color",
+          "default": "var(--input-slider-range-color-primary)"
+        },
+        {
+          "name": "--input-slider-range-color-thumb",
+          "description": "Thumb Color",
+          "default": "var(--input-slider-range-color-primary)"
+        },
+        {
+          "name": "--input-slider-range-color-outline",
+          "description": "Outline Color",
+          "default": "rgb(159 168 218 / 50%)"
+        },
+        {
+          "name": "--input-slider-range-track-height",
+          "description": "Track Height",
+          "default": "4px"
+        },
+        {
+          "name": "--input-slider-range-thumb-size",
+          "description": "Thumb Size",
+          "default": "18px"
         }
       ]
     }
