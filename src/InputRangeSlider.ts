@@ -45,6 +45,10 @@ export class InputRangeSlider extends InputRangeSliderBase(HTMLElement) {
     this.performUpdate();
   }
 
+  connectedCallback() {
+    this.resetSliderState();
+  }
+
   performInputUpdate(name: string, value: number) {
     const input = this.shadowRoot?.querySelector<HTMLInputElement>(`input[name="${name}"]`);
 
