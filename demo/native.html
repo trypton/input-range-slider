@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>HTMLElement - Input Range Slider Demo</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="demo">
+      <h1 class="header">Input Range Slider</h1>
+      <div class="subheader"><a href="./lit.html">LitElement implementation</a> | Native implementation</div>
+
+      <pre>&lt;input-range-slider&gt;&lt;/input-range-slider&gt;</pre>
+      <div class="input-range-slider">
+        <input-range-slider></input-range-slider>
+      </div>
+
+      <pre>&lt;input-range-slider value="10" step="5"&gt;&lt;/input-range-slider&gt;</pre>
+      <div class="input-range-slider">
+        <input-range-slider value="10" step="5"></input-range-slider>
+      </div>
+
+      <pre>&lt;input-range-slider value="[10, 50]"&gt;&lt;/input-range-slider&gt;</pre>
+      <div class="input-range-slider">
+        <input-range-slider value="[10, 50]"></input-range-slider>
+      </div>
+    </div>
+
+    <script type="module">
+      import '../dist/input-range-slider.js';
+    </script>
+  </body>
+</html>

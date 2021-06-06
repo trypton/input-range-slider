@@ -1,42 +1,25 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <style>
-    body {
-      background: #fafafa;
-    }
-    .input-range-slider {
-      align-items: center;
-      display: flex;
-      justify-content: center;
-      min-height: 33vh;
-      margin: 0 auto;
-      width: 50%;
-    }
-  </style>
-</head>
-<body>
-  <div id="demo"></div>
-
-  <script type="module">
-    import { html, render } from 'lit-html';
-    import '../dist/input-range-slider.js';
-
-    render(
-      html`
-        <div class="input-range-slider">
-          <input-range-slider></input-range-slider>
+  <head>
+    <meta charset="utf-8" />
+    <title>Input Range Slider Demo</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="root">
+      <div class="builds">
+        <div class="card">
+          <h2 class="card__header"><a href="./native.html">Native</a></h2>
+          <p>
+            Native custom element implementation with HTMLElement. No dependencies. Has known issue with range
+            overlapping when controlling from keyboard.
+          </p>
         </div>
-        <div class="input-range-slider">
-          <input-range-slider value="10" step="5"></input-range-slider>
+        <div class="card">
+          <h2 class="card__header"><a href="./lit.html">LitElement</a></h2>
+          <p>Custom element implementation with LitElement library. Can be used if you already use lit-element.</p>
         </div>
-        <div class="input-range-slider">
-          <input-range-slider value="[10, 50]"></input-range-slider>
-        </div>
-      `,
-      document.querySelector('#demo')
-    );
-  </script>
-</body>
+      </div>
+    </div>
+  </body>
 </html>
