@@ -7,7 +7,7 @@
       "properties": [
         {
           "name": "value",
-          "type": "Number|Array<Number>",
+          "type": "Number|[Number, Number]",
           "description": "Input value may be an integer value or an array with a range",
           "default": "50"
         },
