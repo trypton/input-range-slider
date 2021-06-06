@@ -28,7 +28,7 @@ interface ArgTypes {
 
 const Template: Story<ArgTypes> = ({ value, min = 0, max = 100, step = 1, primaryColor }: ArgTypes) => html`
   <input-range-slider
-    style="${primaryColor ? `--color-primary: ${primaryColor}` : ''}"
+    style="${primaryColor ? `--input-range-slider-color-primary: ${primaryColor}` : ''}"
     value=${value}
     min=${min}
     max=${max}

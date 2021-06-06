@@ -34,37 +34,37 @@
       "slots": [],
       "cssProperties": [
         {
-          "name": "--input-slider-range-color-primary",
+          "name": "--input-range-slider-color-primary",
           "description": "Main Color",
           "default": "#3f51b5"
         },
         {
-          "name": "--input-slider-range-color-track",
+          "name": "--input-range-slider-color-track",
           "description": "Track Color",
           "default": "#eee"
         },
         {
-          "name": "--input-slider-range-color-fill",
+          "name": "--input-range-slider-color-fill",
           "description": "Track Fill Color",
-          "default": "var(--input-slider-range-color-primary)"
+          "default": "var(--input-range-slider-color-primary)"
         },
         {
-          "name": "--input-slider-range-color-thumb",
+          "name": "--input-range-slider-color-thumb",
           "description": "Thumb Color",
-          "default": "var(--input-slider-range-color-primary)"
+          "default": "var(--input-range-slider-color-primary)"
         },
         {
-          "name": "--input-slider-range-color-outline",
+          "name": "--input-range-slider-color-outline",
           "description": "Outline Color",
           "default": "rgb(159 168 218 / 50%)"
         },
         {
-          "name": "--input-slider-range-track-height",
+          "name": "--input-range-slider-track-height",
           "description": "Track Height",
           "default": "4px"
         },
         {
-          "name": "--input-slider-range-thumb-size",
+          "name": "--input-range-slider-thumb-size",
           "description": "Thumb Size",
           "default": "18px"
         }

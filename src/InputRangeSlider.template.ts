@@ -21,12 +21,12 @@ const trackCss = (browser: BROWSER_PREFIX) => {
     .${BASE_CLASS_NAME}__input::${prefix} {
       background: linear-gradient(
         90deg,
-        var(--input-slider-range-color-track) var(--input-slider-range-track-from, 0%),
-        var(--input-slider-range-color-fill) 0 var(--input-slider-range-track-to, 100%),
-        var(--input-slider-range-color-track) 0
+        var(--input-range-slider-color-track) var(--input-range-slider-track-from, 0%),
+        var(--input-range-slider-color-fill) 0 var(--input-range-slider-track-to, 100%),
+        var(--input-range-slider-color-track) 0
       );
       border-radius: 1px;
-      height: var(--input-slider-range-track-height);
+      height: var(--input-range-slider-track-height);
       width: 100%;
     }
 
@@ -45,21 +45,21 @@ const thumbCss = (browser: BROWSER_PREFIX) => {
   return `
     .${BASE_CLASS_NAME}__input::${prefix} {
       -webkit-appearance: none;
-      background-color: var(--input-slider-range-color-thumb);
+      background-color: var(--input-range-slider-color-thumb);
       border: none;
-      border-radius: var(--input-slider-range-thumb-size);
-      height: var(--input-slider-range-thumb-size);
-      margin-top: calc((var(--input-slider-range-thumb-size) / -2) + (var(--input-slider-range-track-height) / 2));
+      border-radius: var(--input-range-slider-thumb-size);
+      height: var(--input-range-slider-thumb-size);
+      margin-top: calc((var(--input-range-slider-thumb-size) / -2) + (var(--input-range-slider-track-height) / 2));
       position: relative;
       pointer-events: auto;
       transition: all 0.5s ease-out;
-      width: var(--input-slider-range-thumb-size);
+      width: var(--input-range-slider-thumb-size);
       z-index: 1;
     }
 
     .${BASE_CLASS_NAME}--sliding .${BASE_CLASS_NAME}__input::${prefix},
     .${BASE_CLASS_NAME}__input:focus::${prefix} {
-      box-shadow: 0px 0px 1px 3px var(--input-slider-range-color-outline);
+      box-shadow: 0px 0px 1px 3px var(--input-range-slider-color-outline);
     }
 
     .${BASE_CLASS_NAME}--sliding .${BASE_CLASS_NAME}__input::${prefix},
@@ -78,21 +78,21 @@ const template = document.createElement('template');
 template.innerHTML = `
   <style>
     :host {
-      --input-slider-range-color-primary: #3f51b5;
-      --input-slider-range-color-track: #eee;
-      --input-slider-range-color-fill: var(--input-slider-range-color-primary);
-      --input-slider-range-color-thumb: var(--input-slider-range-color-primary);
-      --input-slider-range-color-outline: rgb(159 168 218 / 50%);
-      --input-slider-range-track-height: 4px;
-      --input-slider-range-thumb-size: 18px;
+      --input-range-slider-color-primary: #3f51b5;
+      --input-range-slider-color-track: #eee;
+      --input-range-slider-color-fill: var(--input-range-slider-color-primary);
+      --input-range-slider-color-thumb: var(--input-range-slider-color-primary);
+      --input-range-slider-color-outline: rgb(159 168 218 / 50%);
+      --input-range-slider-track-height: 4px;
+      --input-range-slider-thumb-size: 18px;
 
       display: inline-block;
       width: 100%;
     }
 
     .${BASE_CLASS_NAME} {
-      --input-slider-range-track-from: calc((var(--from) * 100%) / (var(--max) - var(--min)));
-      --input-slider-range-track-to: calc((var(--to) * 100%) / (var(--max) - var(--min)));
+      --input-range-slider-track-from: calc((var(--from) * 100%) / (var(--max) - var(--min)));
+      --input-range-slider-track-to: calc((var(--to) * 100%) / (var(--max) - var(--min)));
 
       position: relative;
     }
