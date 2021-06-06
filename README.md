@@ -1,6 +1,6 @@
 # \<input-range-slider>
 
-Custom input[type=range] element with min and max values support.
+`input[type=range]` webcomponent with interval support.
 
 Both native and lit element implementations are available.
 

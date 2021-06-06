@@ -1,7 +1,7 @@
 {
   "name": "input-range-slider",
   "version": "0.0.1",
-  "description": "input range webcomponent with min and max values support",
+  "description": "input range webcomponent with interval support",
   "author": "Karen Ananiev",
   "license": "MIT",
   "main": "dist/index.js",

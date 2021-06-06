@@ -3,12 +3,12 @@
   "tags": [
     {
       "name": "input-range-slider",
-      "description": "An input range component with min and max values support",
+      "description": "An input range webcomponent with interval support",
       "properties": [
         {
           "name": "value",
           "type": "Number|[Number, Number]",
-          "description": "Input value may be an integer value or an array with a range",
+          "description": "Input value, either integer number or an array that represents an interval",
           "default": "50"
         },
         {
