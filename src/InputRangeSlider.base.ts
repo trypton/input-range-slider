@@ -131,6 +131,7 @@ const InputRangeSliderBase = <TBase extends Constructor<HTMLElement>>(Base: TBas
       this.performUpdate();
     }
 
+    // TODO: figure out how to avoid ts-ignore
     performUpdate() {
       // @ts-ignore
       if (super.performUpdate) {
