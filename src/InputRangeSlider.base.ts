@@ -69,7 +69,7 @@ const InputRangeSliderBase = <TBase extends Constructor<HTMLElement>>(Base: TBas
 
     /**
      * Update value
-     * @param {Event} ev
+     * @param {Event} evt
      */
     handleInput(evt: Event) {
       const target = evt.target as HTMLInputElement;
