@@ -38,9 +38,9 @@ This webcomponent follows the [open-wc](https://github.com/open-wc/open-wc) reco
 
 ```html
 <script type="module">
-  import InputRangeSlider 'input-range-slider';
+  import InputRangeSlider from 'input-range-slider';
   // OR
-  // import InputRangeSlider 'input-range-slider/lit';
+  // import InputRangeSlider from 'input-range-slider/lit';
 
   window.customElements.define('input-range', InputRangeSlider);
 </script>
